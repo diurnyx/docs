@@ -1,0 +1,67 @@
+{
+  "patient": {
+    "sex": "M",
+    "birthdate": "1980-01-01",
+    "name": "John Doe"
+  },
+  "clock": {
+    "timezone": "+02:00"
+  },
+  "recording": {
+    "record_duration": "5s"
+  },
+  "interface": {
+    "i2c1": {
+      "speed_hz": 25000
+    }
+  },
+  "sensors": [
+    { "name": "acc0", "driver": {"adxl345": {}}, "iface": "i2c1", "address": 83 },
+    { "name": "acc1", "driver": {"adxl345": {}}, "iface": "i2c2", "address": 83 }
+  ],
+  "signals": [
+    {
+      "label": "THO X",
+      "source": {
+        "sensor": "acc0",
+        "channel": {"adxl345": "x"}
+      }
+    },
+    {
+      "label": "THO Y",
+      "source": {
+        "sensor": "acc0",
+        "channel": {"adxl345": "y"}
+      }
+    },
+    {
+      "label": "THO Z",
+      "source": {
+        "sensor": "acc0",
+        "channel": {"adxl345": "z"}
+      }
+    },
+    {
+      "label": "ABD X",
+      "source": {
+        "sensor": "acc1",
+        "channel": {"adxl345": "x"}
+      }
+    },
+    {
+      "label": "ABD Y",
+      "source": {
+        "sensor": "acc1",
+        "channel": {"adxl345": "y"}
+      }
+    },
+    {
+      "label": "ABD Z",
+      "source": {
+        "sensor": "acc1",
+        "channel": {"adxl345": "z"}
+      }
+    }
+  ]
+}
+

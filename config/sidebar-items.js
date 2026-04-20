@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_RECORD_DURATION_SECS","MAX_CONFIG_LEN","MAX_SENSORS","MAX_SIGNALS","SENSOR_NAME_LEN"],"enum":["DriverChannel","DriverConfig"],"mod":["sensors","time"],"struct":["ClockConfig","DiurnyxConfig","I2cBusConfig","InterfaceConfig","PatientConfig","RecordingConfig","SensorConfig","SignalConfig","SignalSource"]};

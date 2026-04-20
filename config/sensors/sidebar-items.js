@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Adxl345AccelFullScale","Adxl345Channel","Adxl345OutputDataRate","Sdp8xxChannel"],"struct":["Adxl345Config","DefaultDriverConfig"]};
