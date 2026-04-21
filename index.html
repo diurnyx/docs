@@ -1,202 +1,322 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Diurnyx Documentation</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Diurnyx User Guide</title>
 </head>
+
 <body>
-  <main>
-    <h1>Diurnyx Documentation</h1>
+    <main>
+        <h1>Diurnyx User Guide</h1>
+        <p style="color: #666; font-size: 0.9rem;">
+            Version 0.1.0 - Last updated: 2026-04-21
+        </p>
 
-    <p><strong>Note:</strong> Diurnyx is intended for research use only and is not a medical device. Recorded data is not suitable for diagnostic or clinical use.</p>
+        <p><strong>Note:</strong> Diurnyx is intended for research use only and is not a medical device. Recorded data
+            is not suitable for diagnostic or clinical use.</p>
 
-    <p>Diurnyx is a research-oriented sensor data logger designed to record configured signals to EDF files on an SD card.</p>
+        <p>Diurnyx is a USB-C powered system for measuring and recording sleep-related biosignals. It acquires data from
+            connected sensors and stores recordings as EDF (European Data Format) files on an SD card.</p>
 
-    <p>It is intended exclusively for experimental and scientific use. This guide describes typical operation, including preparing the card, starting and stopping a recording, and retrieving recorded data.</p>
+        <p>A typical workflow is:</p>
+        <ol>
+            <li>Prepare an SD card with a valid configuration</li>
+            <li>Power the device via USB-C</li>
+            <li>Start a recording with a short button press</li>
+            <li>Stop the recording with a long press</li>
+            <li>Remove the SD card and copy the EDF file or files</li>
+        </ol>
 
-    <hr>
+        <p>Each recording session is saved as a separate EDF file.</p>
 
-    <h2>Overview</h2>
+        <hr>
 
-    <p>A recording session follows a basic workflow under normal operating conditions:</p>
-    <ol>
-      <li>Insert a prepared SD card.</li>
-      <li>Power on the device.</li>
-      <li>Short-press the button to start recording.</li>
-      <li>Long-press the button to stop recording.</li>
-      <li>Remove the SD card and copy the EDF file from the <code>DATA</code> directory.</li>
-    </ol>
+        <h2>System Overview</h2>
 
-    <p>Each session is written as a separate EDF file.</p>
+        <p>Diurnyx includes:</p>
+        <ul>
+            <li>A central acquisition unit powered over USB-C</li>
+            <li>Connected biosignal sensors</li>
+            <li>An SD card for configuration and data storage</li>
+            <li>A single-button user interface</li>
+            <li>A USB connection for logging and firmware update</li>
+        </ul>
 
-    <hr>
+        <p>During operation, the device:</p>
+        <ul>
+            <li>Loads configuration from <code>config.json</code></li>
+            <li>Configures the sensor interfaces</li>
+            <li>Initializes the configured sensors</li>
+            <li>Collects and buffers samples</li>
+            <li>Resamples data into EDF record intervals</li>
+            <li>Writes the recording to the SD card</li>
+        </ul>
 
-    <h2>Requirements</h2>
+        <hr>
 
-    <ul>
-      <li>A compatible SD card with a FAT filesystem</li>
-      <li>A valid <code>config.json</code> file in the root of the card</li>
-      <li>Connected sensors appropriate for the intended experimental setup</li>
-      <li>Device power</li>
-    </ul>
+        <h2>Requirements</h2>
 
-    <p>The device writes recordings under:</p>
-    <pre><code>/DATA/</code></pre>
+        <p>Before use, make sure you have:</p>
+        <ul>
+            <li>A compatible SD card formatted with a supported FAT filesystem</li>
+            <li>A valid <code>config.json</code> file in the root directory of the card</li>
+            <li>The required sensors connected for your setup</li>
+            <li>USB-C power</li>
+        </ul>
 
-    <p>If needed, the device creates that directory automatically.</p>
+        <p>Recorded files are written to:</p>
+        <pre><code>/DATA/</code></pre>
 
-    <hr>
+        <p>If the <code>DATA</code> directory does not already exist, the device creates it automatically.</p>
 
-    <h2>SD Card Format Overview</h2>
+        <hr>
 
-    <p>A prepared SD card is a standard SD card formatted and structured so the device can read it correctly. No special physical preparation is required beyond using a compatible card and the expected filesystem layout.</p>
+        <h2>SD Card Preparation</h2>
 
-    <h3>Short Version</h3>
+        <h3>Required card structure</h3>
 
-    <p>A prepared SD card should have:</p>
-    <ul>
-      <li>An <strong>MBR partition table</strong></li>
-      <li>A <strong>FAT32 partition</strong></li>
-      <li>A valid <code>config.json</code> file in the <strong>root directory</strong></li>
-    </ul>
+        <p>The SD card must contain:</p>
+        <ul>
+            <li>A standard <strong>MBR partition table</strong></li>
+            <li>A valid <strong>FAT filesystem</strong> partition</li>
+            <li>A <code>config.json</code> file in the root directory of that partition</li>
+        </ul>
 
-    <p>The <code>DATA</code> directory is optional before first use. If it is missing, the device creates it automatically when needed.</p>
-
-    <p>A typical card may look like:</p>
-    <pre><code>SD_CARD/
+        <p>A typical card layout looks like this:</p>
+        <pre><code>SD_CARD/
 ├── config.json
 └── DATA/
     └── 20260421_143015.edf</code></pre>
 
-    <h3>Format Details</h3>
-
-    <p>The device expects the SD card to contain a standard partitioned FAT volume. In practical terms, this means:</p>
-    <ul>
-      <li>The card should contain a <strong>Master Boot Record (MBR)</strong> at the beginning of the device.</li>
-      <li>The device searches for the <strong>first valid FAT32 partition</strong>.</li>
-      <li>The file <code>config.json</code> must be placed in the <strong>root of that FAT32 partition</strong>.</li>
-    </ul>
-
-    <p>Cards formatted by common operating system tools as FAT are typically suitable, provided they use a normal MBR-based layout and not an unsupported filesystem such as exFAT or NTFS.</p>
-
-    <h3>Expected Directory Layout</h3>
-
-    <p>When viewed on a host computer, a correctly prepared SD card will usually appear similar to the following:</p>
-    <pre><code>SD_CARD/
-├── config.json
-└── DATA/
-    ├── 20260421_143015.edf
-    ├── 20260421_150002.edf
-    └── ...</code></pre>
-
-    <p>Before the first recording, the card may also appear as:</p>
-    <pre><code>SD_CARD/
+        <p>Before the first recording, the card may contain only:</p>
+        <pre><code>SD_CARD/
 └── config.json</code></pre>
 
-    <h3>Formatting Notes</h3>
+        <h3>Notes</h3>
+        <ul>
+            <li>The device searches for the first valid FAT partition on the card</li>
+            <li><code>config.json</code> must be placed in the root of that partition</li>
+            <li>The <code>DATA</code> directory does not need to be created manually</li>
+            <li>Unsupported filesystems such as exFAT or NTFS should not be used</li>
+        </ul>
 
-    <ul>
-      <li>Use a compatible SD card formatted with a supported FAT filesystem.</li>
-      <li>Ensure <code>config.json</code> is present in the root directory before inserting the card.</li>
-      <li>The <code>DATA</code> directory does not need to be created manually.</li>
-      <li>If unsure, reformat the card using standard FAT settings and then copy <code>config.json</code> to the root.</li>
-    </ul>
+        <p>If there is any doubt about the card format, reformat it using standard FAT settings and then copy
+            <code>config.json</code> back to the root directory.</p>
 
-    <hr>
+        <hr>
 
-    <h2>Controls</h2>
+        <h2>Configuration</h2>
 
-    <h3>Idle</h3>
-    <ul>
-      <li><strong>Short press</strong>: start a new recording</li>
-      <li><strong>Long press</strong>: no action</li>
-    </ul>
+        <p>
+            Diurnyx is configured using a <code>config.json</code> file located in the root
+            directory of the SD card.
+        </p>
 
-    <h3>Recording</h3>
-    <ul>
-      <li><strong>Long press</strong>: stop the current recording</li>
-      <li><strong>Short press</strong>: no action</li>
-    </ul>
+        <h3>Configuration Schema</h3>
 
-    <hr>
+        <p>
+            The full configuration structure is documented in the generated API documentation:
+        </p>
 
-    <h2>Starting a Recording</h2>
+        <p>
+            <a href="./config/struct.DiurnyxConfig.html">
+                View configuration schema documentation
+            </a>
+        </p>
 
-    <ol>
-      <li>Insert the SD card.</li>
-      <li>Power on the device.</li>
-      <li>Wait for the device to become idle.</li>
-      <li>Short-press the button.</li>
-    </ol>
+        <h3>Example Configurations</h3>
 
-    <p>When recording starts, the device attempts to read its configuration, initialize connected hardware, and create a new EDF file on the SD card.</p>
+        <p>
+            A collection of sample configuration files is available to help you get started:
+        </p>
 
-    <hr>
+        <p>
+            <a href="./examples/">
+                Browse sample configurations
+            </a>
+        </p>
 
-    <h2>Stopping a Recording</h2>
+        <p>
+            These examples demonstrate typical setups for different sensor combinations and
+            use cases. You can copy and modify them as needed.
+        </p>
 
-    <p>To stop a session, long-press the button while recording is active.</p>
+        <hr>
 
-    <p>The device attempts to finalize and close the EDF file before returning to idle. Do not remove power or the SD card until the session has ended.</p>
+        <h2>Controls</h2>
 
-    <hr>
+        <p>Diurnyx uses a single button.</p>
 
-    <h2>Recorded Files</h2>
+        <h3>While idle</h3>
+        <ul>
+            <li><strong>Short press:</strong> start a new recording</li>
+            <li><strong>Long press:</strong> no action</li>
+        </ul>
 
-    <p>Recorded files are stored in:</p>
-    <pre><code>/DATA/</code></pre>
+        <h3>While recording</h3>
+        <ul>
+            <li><strong>Long press:</strong> stop the current recording</li>
+            <li><strong>Short press:</strong> no action</li>
+        </ul>
 
-    <p>Each recording is stored as a separate EDF file. File naming is based on the recording start time as provided by the device clock:</p>
-    <pre><code>YYYYMMDD_HHMMSS.edf</code></pre>
+        <hr>
 
-    <p>Example:</p>
-    <pre><code>20260421_143015.edf</code></pre>
+        <h2>Starting a Recording</h2>
 
-    <hr>
+        <ol>
+            <li>Insert the SD card</li>
+            <li>Power the device via USB-C</li>
+            <li>Wait for the device to become idle</li>
+            <li>Short-press the button</li>
+        </ol>
 
-    <h2>Timekeeping</h2>
+        <p>When recording starts, the device:</p>
+        <ul>
+            <li>Detects and mounts the SD card</li>
+            <li>Loads <code>config.json</code></li>
+            <li>Applies interface configuration</li>
+            <li>Initializes the configured sensors</li>
+            <li>Creates a new EDF file</li>
+            <li>Begins recording data</li>
+        </ul>
 
-    <p>The device uses its internal clock for timestamps, including file naming and metadata. Accuracy depends on prior time initialization and configuration.</p>
+        <p>If any of these steps fail, recording will not start.</p>
 
-    <p>If a timezone is configured, local time is used for the recording filename and metadata.</p>
+        <hr>
 
-    <hr>
+        <h2>Stopping a Recording</h2>
 
-    <h2>USB Logging</h2>
+        <p>To stop a recording, long-press the button while recording is active.</p>
 
-    <p>Logs may assist in observing device behavior during startup, card detection, recording start and stop, and error conditions.</p>
+        <p>The device then finalizes and closes the EDF file before returning to idle.</p>
 
-    <p>Logs are intended for development and troubleshooting purposes and should not be interpreted as validated system diagnostics.</p>
+        <p>Do not remove power or remove the SD card until recording has fully stopped.</p>
 
-    <hr>
+        <hr>
 
-    <h2>Troubleshooting</h2>
+        <h2>Recorded Files</h2>
 
-    <p>The following checks may help identify common issues during experimental use:</p>
+        <p>Recordings are stored in:</p>
+        <pre><code>/DATA/</code></pre>
 
-    <h3>Recording does not start</h3>
-    <ul>
-      <li>Check that the SD card is inserted correctly.</li>
-      <li>Check that <code>config.json</code> exists in the root of the card.</li>
-      <li>Check that the card is readable and formatted as expected.</li>
-      <li>Check that the connected hardware matches the intended setup.</li>
-      <li>Review USB logs if available.</li>
-    </ul>
+        <p>Each recording session is written as a separate EDF file.</p>
 
-    <h3>No useful data is recorded</h3>
-    <ul>
-      <li>Check sensor connections.</li>
-      <li>Check that the intended setup is installed.</li>
-      <li>Review USB logs for hardware or acquisition errors.</li>
-    </ul>
+        <p>File names are based on the recording start time using the device clock:</p>
+        <pre><code>YYYYMMDD_HHMMSS.edf</code></pre>
 
-    <h3>Timestamps look wrong</h3>
-    <ul>
-      <li>Check device time initialization.</li>
-      <li>Check the configured timezone, if used.</li>
-    </ul>
+        <p>Example:</p>
+        <pre><code>20260421_143015.edf</code></pre>
 
-  </main>
+        <p>The timestamp used for the filename is derived from the internal real-time clock. If a timezone is
+            configured, local time is used for file naming and EDF metadata.</p>
+
+        <hr>
+
+        <h2>Timekeeping</h2>
+
+        <p>Diurnyx uses its internal real-time clock for timestamps.</p>
+
+        <p>This affects:</p>
+        <ul>
+            <li>EDF start time metadata</li>
+            <li>Recording identifiers</li>
+            <li>Output file names</li>
+        </ul>
+
+        <p>If configured, a timezone offset is applied when generating the recording timestamp.</p>
+
+        <p>The device may also update its real-time clock from the SD card configuration file timestamp when
+            appropriate, for example if the stored file timestamp is newer than the current real-time clock value or if
+            a clock reset is requested in configuration.</p>
+
+        <hr>
+
+        <h2>USB Logging</h2>
+
+        <p>Diurnyx provides USB logging over a <strong>virtual COM port</strong> using <strong>USB CDC-ACM</strong>.</p>
+
+        <p>When connected to a host computer, the device can appear as a serial port for development and
+            troubleshooting. Log output may include:</p>
+        <ul>
+            <li>Startup messages</li>
+            <li>SD card and filesystem status</li>
+            <li>Sensor initialization and retry behavior</li>
+            <li>Recording progress</li>
+            <li>Error messages</li>
+        </ul>
+
+        <p>The logs are timestamped and intended for development, testing, and troubleshooting. They should not be
+            treated as validated diagnostics.</p>
+
+        <p>A serial terminal program such as <code>minicom</code>, <code>screen</code>, or PuTTY can be used to monitor
+            the log output.</p>
+
+        <hr>
+
+        <h2>Firmware Update (DFU)</h2>
+
+        <p>Diurnyx supports firmware update over USB using <strong>Device Firmware Upgrade</strong>.</p>
+
+        <h3>DFU behavior</h3>
+
+        <p>The firmware exposes a USB Device Firmware Upgrade interface. When Device Firmware Upgrade mode is requested
+            by the host, the device resets into the STM32 system read-only memory bootloader.</p>
+
+        <p>After that reset:</p>
+        <ul>
+            <li>The device disconnects from normal application mode</li>
+            <li>USB re-enumerates as a Device Firmware Upgrade-capable bootloader device</li>
+            <li>Firmware can be transferred using a compatible Device Firmware Upgrade utility</li>
+        </ul>
+
+        <h3>Notes</h3>
+        <ul>
+            <li>Device Firmware Upgrade uses the microcontroller unit built-in system bootloader</li>
+            <li>Entering Device Firmware Upgrade mode interrupts normal recording operation</li>
+            <li>USB power must remain connected throughout the update process</li>
+            <li>Any recording in progress should be stopped before performing a firmware update</li>
+        </ul>
+
+        <hr>
+
+        <h2>Troubleshooting</h2>
+
+        <h3>Recording does not start</h3>
+        <p>Check the following:</p>
+        <ul>
+            <li>The SD card is inserted correctly</li>
+            <li>The card contains a valid FAT filesystem</li>
+            <li><code>config.json</code> is present in the root directory</li>
+            <li>The connected sensors match the intended hardware configuration</li>
+            <li>USB logging is available and shows no startup or configuration errors</li>
+        </ul>
+
+        <h3>Recording starts but no useful data is captured</h3>
+        <p>Check the following:</p>
+        <ul>
+            <li>Sensor wiring and connections</li>
+            <li>Sensor power and interface compatibility</li>
+            <li>Configuration matches the installed hardware</li>
+            <li>USB logs for sensor initialization failures, read failures, or timeouts</li>
+        </ul>
+
+        <h3>Timestamps look wrong</h3>
+        <p>Check the following:</p>
+        <ul>
+            <li>Real-time clock initialization</li>
+            <li>Timezone configuration, if used</li>
+            <li>The timestamp on <code>config.json</code>, since it may be used to update the real-time clock</li>
+        </ul>
+    </main>
+    <footer style="margin-top: 3rem; padding: 1rem 0; border-top: 1px solid #ccc; font-size: 0.9rem;">
+        <nav style="text-align: center;">
+            <a href="https://diurnyx.com/impressum.html" style="margin: 0 1rem;">Legal Notice</a>
+            <a href="https://diurnyx.com/datenschutz.html" style="margin: 0 1rem;">Privacy Policy</a>
+            <a href="https://diurnyx.com/disclaimer.html" style="margin: 0 1rem;">Disclaimer</a>
+        </nav>
+    </footer>
 </body>
+
 </html>
