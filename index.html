@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diurnyx Documentation</title>
+</head>
+<body>
+  <main>
+    <h1>Diurnyx Documentation</h1>
+
+    <p><strong>Note:</strong> Diurnyx is intended for research use only and is not a medical device. Recorded data is not suitable for diagnostic or clinical use.</p>
+
+    <p>Diurnyx is a research-oriented sensor data logger designed to record configured signals to EDF files on an SD card.</p>
+
+    <p>It is intended exclusively for experimental and scientific use. This guide describes typical operation, including preparing the card, starting and stopping a recording, and retrieving recorded data.</p>
+
+    <hr>
+
+    <h2>Overview</h2>
+
+    <p>A recording session follows a basic workflow under normal operating conditions:</p>
+    <ol>
+      <li>Insert a prepared SD card.</li>
+      <li>Power on the device.</li>
+      <li>Short-press the button to start recording.</li>
+      <li>Long-press the button to stop recording.</li>
+      <li>Remove the SD card and copy the EDF file from the <code>DATA</code> directory.</li>
+    </ol>
+
+    <p>Each session is written as a separate EDF file.</p>
+
+    <hr>
+
+    <h2>Requirements</h2>
+
+    <ul>
+      <li>A compatible SD card with a FAT filesystem</li>
+      <li>A valid <code>config.json</code> file in the root of the card</li>
+      <li>Connected sensors appropriate for the intended experimental setup</li>
+      <li>Device power</li>
+    </ul>
+
+    <p>The device writes recordings under:</p>
+    <pre><code>/DATA/</code></pre>
+
+    <p>If needed, the device creates that directory automatically.</p>
+
+    <hr>
+
+    <h2>SD Card Format Overview</h2>
+
+    <p>A prepared SD card is a standard SD card formatted and structured so the device can read it correctly. No special physical preparation is required beyond using a compatible card and the expected filesystem layout.</p>
+
+    <h3>Short Version</h3>
+
+    <p>A prepared SD card should have:</p>
+    <ul>
+      <li>An <strong>MBR partition table</strong></li>
+      <li>A <strong>FAT32 partition</strong></li>
+      <li>A valid <code>config.json</code> file in the <strong>root directory</strong></li>
+    </ul>
+
+    <p>The <code>DATA</code> directory is optional before first use. If it is missing, the device creates it automatically when needed.</p>
+
+    <p>A typical card may look like:</p>
+    <pre><code>SD_CARD/
+├── config.json
+└── DATA/
+    └── 20260421_143015.edf</code></pre>
+
+    <h3>Format Details</h3>
+
+    <p>The device expects the SD card to contain a standard partitioned FAT volume. In practical terms, this means:</p>
+    <ul>
+      <li>The card should contain a <strong>Master Boot Record (MBR)</strong> at the beginning of the device.</li>
+      <li>The device searches for the <strong>first valid FAT32 partition</strong>.</li>
+      <li>The file <code>config.json</code> must be placed in the <strong>root of that FAT32 partition</strong>.</li>
+    </ul>
+
+    <p>Cards formatted by common operating system tools as FAT are typically suitable, provided they use a normal MBR-based layout and not an unsupported filesystem such as exFAT or NTFS.</p>
+
+    <h3>Expected Directory Layout</h3>
+
+    <p>When viewed on a host computer, a correctly prepared SD card will usually appear similar to the following:</p>
+    <pre><code>SD_CARD/
+├── config.json
+└── DATA/
+    ├── 20260421_143015.edf
+    ├── 20260421_150002.edf
+    └── ...</code></pre>
+
+    <p>Before the first recording, the card may also appear as:</p>
+    <pre><code>SD_CARD/
+└── config.json</code></pre>
+
+    <h3>Formatting Notes</h3>
+
+    <ul>
+      <li>Use a compatible SD card formatted with a supported FAT filesystem.</li>
+      <li>Ensure <code>config.json</code> is present in the root directory before inserting the card.</li>
+      <li>The <code>DATA</code> directory does not need to be created manually.</li>
+      <li>If unsure, reformat the card using standard FAT settings and then copy <code>config.json</code> to the root.</li>
+    </ul>
+
+    <hr>
+
+    <h2>Controls</h2>
+
+    <h3>Idle</h3>
+    <ul>
+      <li><strong>Short press</strong>: start a new recording</li>
+      <li><strong>Long press</strong>: no action</li>
+    </ul>
+
+    <h3>Recording</h3>
+    <ul>
+      <li><strong>Long press</strong>: stop the current recording</li>
+      <li><strong>Short press</strong>: no action</li>
+    </ul>
+
+    <hr>
+
+    <h2>Starting a Recording</h2>
+
+    <ol>
+      <li>Insert the SD card.</li>
+      <li>Power on the device.</li>
+      <li>Wait for the device to become idle.</li>
+      <li>Short-press the button.</li>
+    </ol>
+
+    <p>When recording starts, the device attempts to read its configuration, initialize connected hardware, and create a new EDF file on the SD card.</p>
+
+    <hr>
+
+    <h2>Stopping a Recording</h2>
+
+    <p>To stop a session, long-press the button while recording is active.</p>
+
+    <p>The device attempts to finalize and close the EDF file before returning to idle. Do not remove power or the SD card until the session has ended.</p>
+
+    <hr>
+
+    <h2>Recorded Files</h2>
+
+    <p>Recorded files are stored in:</p>
+    <pre><code>/DATA/</code></pre>
+
+    <p>Each recording is stored as a separate EDF file. File naming is based on the recording start time as provided by the device clock:</p>
+    <pre><code>YYYYMMDD_HHMMSS.edf</code></pre>
+
+    <p>Example:</p>
+    <pre><code>20260421_143015.edf</code></pre>
+
+    <hr>
+
+    <h2>Timekeeping</h2>
+
+    <p>The device uses its internal clock for timestamps, including file naming and metadata. Accuracy depends on prior time initialization and configuration.</p>
+
+    <p>If a timezone is configured, local time is used for the recording filename and metadata.</p>
+
+    <hr>
+
+    <h2>USB Logging</h2>
+
+    <p>Logs may assist in observing device behavior during startup, card detection, recording start and stop, and error conditions.</p>
+
+    <p>Logs are intended for development and troubleshooting purposes and should not be interpreted as validated system diagnostics.</p>
+
+    <hr>
+
+    <h2>Troubleshooting</h2>
+
+    <p>The following checks may help identify common issues during experimental use:</p>
+
+    <h3>Recording does not start</h3>
+    <ul>
+      <li>Check that the SD card is inserted correctly.</li>
+      <li>Check that <code>config.json</code> exists in the root of the card.</li>
+      <li>Check that the card is readable and formatted as expected.</li>
+      <li>Check that the connected hardware matches the intended setup.</li>
+      <li>Review USB logs if available.</li>
+    </ul>
+
+    <h3>No useful data is recorded</h3>
+    <ul>
+      <li>Check sensor connections.</li>
+      <li>Check that the intended setup is installed.</li>
+      <li>Review USB logs for hardware or acquisition errors.</li>
+    </ul>
+
+    <h3>Timestamps look wrong</h3>
+    <ul>
+      <li>Check device time initialization.</li>
+      <li>Check the configured timezone, if used.</li>
+    </ul>
+
+  </main>
+</body>
+</html>
